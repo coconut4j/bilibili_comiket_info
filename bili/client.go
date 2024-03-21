@@ -14,7 +14,7 @@ import (
 
 const (
 	Page_Size       = 1 << 4
-	bilibiliHost    = "https://show.bilibili.com/"
+	baseurl         = "https://show.bilibili.com"
 	ShenzhenArea    = "440300"
 	DefaultPageSize = "16"
 	DefaultPage     = "1"
@@ -22,9 +22,8 @@ const (
 )
 
 var (
-	c    *http.Client
-	bc   *BiliClient
-	once sync.Once
+	c  *http.Client
+	bc *BiliClient
 )
 
 type BiliClient struct {
@@ -32,22 +31,19 @@ type BiliClient struct {
 	BilibiliHost string
 }
 
-func GetBiliBiliClient() *BiliClient {
+func Get_client() *BiliClient {
 	if bc == nil {
-		once.Do(func() {
-			c = &http.Client{Timeout: 10 * time.Second}
-			bc = &BiliClient{
-				c:            c,
-				BilibiliHost: bilibiliHost,
-			}
-		})
+		c = &http.Client{Timeout: 10 * time.Second}
+		bc = &BiliClient{
+			c:            c,
+			BilibiliHost: baseurl,
+		}
 	}
 	return bc
 }
 
 func (bc *BiliClient) CreateUrl(page, pagesize, area, p_type string) string {
 	s := fmt.Sprintf("%s/api/ticket/project/listV2?version=134&page=%s&pagesize=%s&area=%s&filter=&platform=web&p_type=%s", bc.BilibiliHost, page, pagesize, area, p_type)
-	fmt.Println(s)
 	return s
 }
 
@@ -84,33 +80,21 @@ func (bc *BiliClient) request(url string) (*Model.Data, error) {
 	return &respStruct.Data, err
 }
 
-func (bc *BiliClient) Info() (Model.BaseInfo, error) {
-	var resp Model.BaseInfo
-	data, err := bc.GetFirstPageData()
-	if err != nil {
-		return resp, err
-	}
-
-	resp.Total = data.Total
-	resp.Page = data.Page
-	resp.Pagesize = data.Pagesize
-	resp.NumResults = data.NumResults
-	resp.NumPages = data.NumPages
-	return resp, nil
-}
-
 func (bc *BiliClient) GetAllResult() ([]Model.SingeResult, error) {
 	var resp []Model.SingeResult
+
 	data, err := bc.GetFirstPageData()
 	if err != nil {
 		return nil, err
 	}
+
 	//只有一页数据直接返回
 	numPages := data.NumPages
 	if numPages == 1 {
 		return data.Result, err
 	}
 	resp = append(resp, data.Result...)
+
 	respchan := make(chan *Model.Data, numPages-1)
 	errChan := make(chan error, numPages-1)
 	wg := sync.WaitGroup{}
@@ -141,49 +125,11 @@ func (bc *BiliClient) GetAllResult() ([]Model.SingeResult, error) {
 	return resp, nil
 }
 
-/*
-func a() {
-	//计算总数和页数
-
-	//从第一页开始
-
-	firstPage := do(&c, url)
-	allData = append(allData, firstPage)
-	//总数
-	//total := firstPage.Total
-	//页数
-	NumPages := firstPage.NumPages
-
-	if NumPages == 1 {
-		//todo 直接处理结果
+func (bc *BiliClient) Show_result(resplist []Model.SingeResult) {
+	for _, res := range resplist {
+		maptemp := res.Conv2Com()
+		fmt.Println(maptemp.String())
 	}
-	//第一页已经请求过了 从第二页开始多线程请求 且存在第二页
-	wg.Add(NumPages - 1) //需要numpages-1个协程等待
-	respchan := make(chan *Data, NumPages)
-	for i := 2; i <= NumPages; i++ {
-		url = fmt.Sprintf("/api/ticket/project/listV2?version=134&page=%d&pagesize=16&area=440300&filter=&platform=web&p_type=展览", i)
-		go func() {
-			defer wg.Done()
-			a := do(&c, url)
 
-			respchan <- a
-		}()
-	}
-	wg.Wait()
-	close(respchan)
-	for data := range respchan {
-		allData = append(allData, data)
-	}
-	for page, datum := range allData {
-		fmt.Printf("page = %d \r\n data = %v \r\n", page+1, datum)
-	}
+	return
 }
-
-func do(c *http.Client, url string) {
-	resp, err := c.Get(BilibiliHost + url)
-	if err != nil {
-		panic(err)
-	}
-
-}
-*/

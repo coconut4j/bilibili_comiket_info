@@ -1,7 +1,6 @@
 package Model
 
 import (
-	"fmt"
 	"strings"
 	"time"
 )
@@ -63,9 +62,9 @@ type SingeResult struct {
 	Url            string      `json:"url"`
 	VenueId        string      `json:"venue_id"`
 	VenueName      string      `json:"venue_name"`
-	Wish           string      `json:"wish"`
+	Wish           int         `json:"wish"`
 	Guests         []struct {
-		Id   string `json:"id"`
+		Id   int    `json:"id"`
 		Name string `json:"name"`
 	} `json:"guests,omitempty"`
 	IsExclusive        bool          `json:"is_exclusive"`
@@ -137,7 +136,7 @@ type CompareResult struct {
 
 func (b *BaseInfo) String() string {
 
-	return fmt.Sprintf("总数=%d \r\npage=%d \r\npagesize=%d \r\n页数=%d \r\n 当前页数量=%d  \r\n seid = %s", b.Total, b.Page, b.Pagesize, b.NumPages, b.NumResults, b.Seid)
+	return "stop"
 }
 
 func (s *SingeResult) Conv2Com() *CompareResult {
