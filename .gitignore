@@ -1,1 +1,13 @@
 *.txt
+/bin/
+/pkg/
+/*.exe
+/*.dll
+/*.so
+/*.dylib
+/*.test
+.vscode/
+.idea/
+*.iml
+/go.mod
+/go.sum
