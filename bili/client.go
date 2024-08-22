@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -15,7 +16,7 @@ import (
 const (
 	Page_Size       = 1 << 4
 	baseurl         = "https://show.bilibili.com"
-	ShenzhenArea    = "440300"
+	SzArea          = "440300"
 	DefaultPageSize = "16"
 	DefaultPage     = "1"
 	DefaultType     = "展览"
@@ -23,8 +24,9 @@ const (
 )
 
 var (
-	c  *http.Client
-	bc *BiliClient
+	c          *http.Client
+	bc         *BiliClient
+	sreacharea string
 )
 
 type BiliClient struct {
@@ -32,7 +34,8 @@ type BiliClient struct {
 	BilibiliHost string
 }
 
-func Get_client() *BiliClient {
+func Get_client(area string) *BiliClient {
+	sreacharea = area
 	if bc == nil {
 		c = &http.Client{Timeout: 10 * time.Second}
 		bc = &BiliClient{
@@ -43,17 +46,34 @@ func Get_client() *BiliClient {
 	return bc
 }
 
+// b站默认是获取第一页后确定pagesize 默认1开始
 func (bc *BiliClient) CreateUrl(page, pagesize, area, p_type string) string {
 	s := fmt.Sprintf("%s/api/ticket/project/listV2?version=134&page=%s&pagesize=%s&area=%s&filter=&platform=web&p_type=%s", bc.BilibiliHost, page, pagesize, area, p_type)
 	return s
 }
 
 func (bc *BiliClient) GetDefaultUrl() string {
-	return bc.CreateUrl(DefaultPage, DefaultPageSize, GzArea, DefaultType)
+	var temp string
+	if strings.ToLower(sreacharea) == "gz" {
+		temp = GzArea
+	} else if strings.ToLower(sreacharea) == "sz" {
+		temp = SzArea
+	} else {
+		temp = GzArea
+	}
+	return bc.CreateUrl(DefaultPage, DefaultPageSize, temp, DefaultType)
 }
 
 func (bc *BiliClient) GetOnePageData(page, pagesize string) (*Model.Data, error) {
-	url := bc.CreateUrl(page, pagesize, GzArea, DefaultType)
+	var temp string
+	if strings.ToLower(sreacharea) == "gz" {
+		temp = GzArea
+	} else if strings.ToLower(sreacharea) == "sz" {
+		temp = SzArea
+	} else {
+		temp = GzArea
+	}
+	url := bc.CreateUrl(page, pagesize, temp, DefaultType)
 	return bc.request(url)
 }
 
