@@ -4,7 +4,6 @@ import (
 	"ComicS/Model"
 	"ComicS/bili"
 	"flag"
-	"fmt"
 	"strings"
 	"time"
 )
@@ -39,7 +38,7 @@ func main() {
 	if *endtimestring != "no" {
 		t, _ := time.Parse("2006-01-02 15:04:05", *endtimestring)
 		unixendtime = t.Unix()
-		fmt.Printf("\n flag data %s unix time:%d \n", *endtimestring, unixendtime)
+		//fmt.Printf("\n flag data %s unix time:%d \n", *endtimestring, unixendtime)
 	}
 
 	if strings.ToLower(*mode) == "local" {
