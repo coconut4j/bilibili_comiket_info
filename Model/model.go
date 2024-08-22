@@ -57,7 +57,7 @@ type SingeResult struct {
 	SalePoint      string      `json:"sale_point"`
 	ShowTime       string      `json:"show_time,omitempty"`
 	StartTime      string      `json:"start_time"`
-	StartUnix      int         `json:"start_unix"`
+	StartUnix      int64       `json:"start_unix"`
 	Tlabel         string      `json:"tlabel"`
 	Type           interface{} `json:"type"`
 	Url            string      `json:"url"`

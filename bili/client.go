@@ -292,6 +292,11 @@ func (bc *BiliClient) DaemonMode() {
 	return
 }
 
+func (bc *BiliClient) Pic(resplist []Model.SingeResult) {
+
+	return
+}
+
 func envset() {
 
 }
