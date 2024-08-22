@@ -6,7 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
+	"os"
+	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -27,6 +31,7 @@ var (
 	c          *http.Client
 	bc         *BiliClient
 	sreacharea string
+	isclear    bool
 )
 
 type BiliClient struct {
@@ -34,8 +39,9 @@ type BiliClient struct {
 	BilibiliHost string
 }
 
-func Get_client(area string) *BiliClient {
+func Get_client(area string, cleardata bool) *BiliClient {
 	sreacharea = area
+	isclear = cleardata
 	if bc == nil {
 		c = &http.Client{Timeout: 10 * time.Second}
 		bc = &BiliClient{
@@ -149,12 +155,15 @@ func (bc *BiliClient) GetAllResult() ([]Model.SingeResult, error) {
 func (bc *BiliClient) Show_result(resplist []Model.SingeResult) {
 	count := 0
 	for _, res := range resplist {
+		if isclear && res.SaleFlagNumber != 2 {
+			continue
+		}
 		maptemp := res.Conv2Com()
 		fmt.Println(maptemp.String())
 		count++
 	}
 
-	fmt.Printf("\n总计%d个信息\n", count)
+	fmt.Printf("\n总计%d个有效信息 收集了%d个信息\n", count, len(resplist))
 
 	return
 }
@@ -165,11 +174,125 @@ func (bc *BiliClient) SortByTime(resplist []Model.SingeResult) {
 }
 
 func (bc *BiliClient) Save2file(resplist []Model.SingeResult) {
+	//在当前目录下利用时间戳建立文件夹保存
+	currentTime := time.Now()
+	timeStr := currentTime.Format("20060102_150405")
+	dirpath := "result" + timeStr
+
+	err := os.Mkdir(dirpath, 0755) // 0755 是目录的权限设置
+	if err != nil {
+		fmt.Println("Error creating directory:", err)
+		return
+	}
+
+	for i, res := range resplist {
+		//保存txt及封面
+		newdirpath := dirpath + "/" + "数据" + strconv.Itoa(i)
+		err := os.MkdirAll(newdirpath, 0755) // 0755 是目录的权限设置
+		if err != nil {
+			fmt.Println("Error creating directory:", err)
+			return
+		}
+		txtpath := newdirpath + "/" + "展子讯息.txt"
+		picpath := newdirpath + "/" + "cover.jpeg"
+		datatemp := res.Conv2Com()
+		writetxt(datatemp.String(), txtpath)
+		downloadpic(datatemp.Cover, picpath)
+
+	}
 
 	return
 }
 
+func writetxt(txtdata string, savepath string) error {
+	// 创建或打开文件
+	file, err := os.Create(savepath)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return err
+	}
+	defer file.Close() // 确保在函数结束时关闭文件
+
+	// 写入文本到文件
+	_, err = file.WriteString(txtdata)
+	if err != nil {
+		fmt.Println("Error writing to file:", err)
+		return err
+	}
+
+	return nil
+}
+
+func downloadpic(url string, savepath string) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// 创建文件
+	out, err := os.Create(savepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// 将 HTTP 响应的主体（即图片数据）复制到文件中
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (bc *BiliClient) DaemonMode() {
 
+	envset()
+
+	if os.Getenv("GO_DAEMON") != "1" {
+		cmd := exec.Command(os.Args[0])
+		cmd.Env = append(os.Environ(), "GO_DAEMON=1")
+		cmd.Stdout = nil
+		cmd.Stderr = nil
+		cmd.Stdin = nil
+
+		sysinfo := runtime.GOOS
+		if sysinfo != "windows" {
+			//unix系统专供daemon win得服务注册 unix编译可以删除备注
+			//cmd.SysProcAttr = &syscall.SysProcAttr{
+			//	Setsid: true,
+			//}
+		}
+
+		err := cmd.Start()
+		if err != nil {
+			log.Fatal("Failed to start daemon process: ", err)
+		}
+		log.Println("Daemon process started with PID:", cmd.Process.Pid)
+		os.Exit(0)
+	}
+
 	return
+}
+
+func envset() {
+
+}
+
+func rpcmode() {
+	// 关闭标准输入、输出和错误流
+	f, err := os.OpenFile("/dev/null", os.O_RDWR, 0)
+	if err != nil {
+		log.Fatal("Failed to open /dev/null: ", err)
+	}
+	defer f.Close()
+	os.Stdout = f
+	os.Stderr = f
+	os.Stdin = f
+
+	// 模拟守护进程的持续工作
+	for {
+		//预留为protoc grpc提供http查询业务
+	}
 }
