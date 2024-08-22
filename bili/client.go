@@ -231,22 +231,6 @@ func (bc *BiliClient) Save2file(resplist []Model.SingeResult) {
 	}
 	wg.Wait()
 
-	//for i, res := range resplist {
-	//保存txt及封面
-	//	newdirpath := dirpath + "/" + "数据" + strconv.Itoa(i)
-	//	err := os.MkdirAll(newdirpath, 0755) // 0755 是目录的权限设置
-	//	if err != nil {
-	//		fmt.Println("Error creating directory:", err)
-	//		return
-	//	}
-	//	txtpath := newdirpath + "/" + "展子讯息.txt"
-	//	picpath := newdirpath + "/" + "cover.jpeg"
-	//	datatemp := res.Conv2Com()
-	//	writetxt(datatemp.String(), txtpath)
-	//	downloadpic(datatemp.Cover, picpath)
-
-	//}
-
 	return
 }
 
