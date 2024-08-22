@@ -147,10 +147,29 @@ func (bc *BiliClient) GetAllResult() ([]Model.SingeResult, error) {
 }
 
 func (bc *BiliClient) Show_result(resplist []Model.SingeResult) {
+	count := 0
 	for _, res := range resplist {
 		maptemp := res.Conv2Com()
 		fmt.Println(maptemp.String())
+		count++
 	}
+
+	fmt.Printf("\n总计%d个信息\n", count)
+
+	return
+}
+
+func (bc *BiliClient) SortByTime(resplist []Model.SingeResult) {
+
+	return
+}
+
+func (bc *BiliClient) Save2file(resplist []Model.SingeResult) {
+
+	return
+}
+
+func (bc *BiliClient) DaemonMode() {
 
 	return
 }

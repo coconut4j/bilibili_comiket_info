@@ -26,6 +26,7 @@ func NewCompareResult(projectId int, projectName string, saleFlag string, saleEn
 	return &CompareResult{ProjectId: projectId, ProjectName: projectName, SaleFlag: saleFlag, SaleEndTime: saleEndTime, SaleStartTime: saleStartTime, VenueId: venueId, VenueName: venueName, Cover: cover, Url: url, Staff: staff}
 }
 
+// sale_flag_number 2为正常卖中 1是没开票
 type SingeResult struct {
 	Banner         string      `json:"banner,omitempty"`
 	City           string      `json:"city"`
