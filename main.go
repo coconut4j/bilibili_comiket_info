@@ -4,6 +4,7 @@ import (
 	"ComicS/Model"
 	"ComicS/bili"
 	"flag"
+	"fmt"
 	"strings"
 	"time"
 )
@@ -36,8 +37,9 @@ func main() {
 	}
 
 	if *endtimestring != "no" {
-		t, _ := time.Parse("2006-01-01", *endtimestring)
+		t, _ := time.Parse("2006-01-02 15:04:05", *endtimestring)
 		unixendtime = t.Unix()
+		fmt.Printf("\n flag data %s unix time:%d \n", *endtimestring, unixendtime)
 	}
 
 	if strings.ToLower(*mode) == "local" {
@@ -58,7 +60,7 @@ func Show_info_local() {
 		panic(err)
 	}
 	if debuglv == 1 {
-		res = bc.SortByTime(res)
+		res = bc.SortByTime(res, unixendtime)
 		bc.Show_result(res)
 	}
 
@@ -70,7 +72,7 @@ func SaveFile() {
 	if err != nil {
 		panic(err)
 	}
-	res = bc.SortByTime(res)
+	res = bc.SortByTime(res, unixendtime)
 	bc.Save2file(res)
 }
 
@@ -85,6 +87,6 @@ func genpic() {
 	if err != nil {
 		panic(err)
 	}
-	res = bc.SortByTime(res)
+	res = bc.SortByTime(res, unixendtime)
 	bc.Pic(res)
 }

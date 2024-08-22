@@ -169,21 +169,31 @@ func (bc *BiliClient) Show_result(resplist []Model.SingeResult) {
 	return
 }
 
-func (bc *BiliClient) SortByTime(resplist []Model.SingeResult) []Model.SingeResult {
+func (bc *BiliClient) SortByTime(resplist []Model.SingeResult, unixendtime int64) []Model.SingeResult {
 	if isclear {
-		resplist = delunuse(resplist)
+		resplist = delunuse(resplist, unixendtime)
 	}
 	sort.Sort(Model.ByUnixTimestamp(resplist))
 	return resplist
 }
 
-func delunuse(resplist []Model.SingeResult) []Model.SingeResult {
+func delunuse(resplist []Model.SingeResult, unixendtime int64) []Model.SingeResult {
 	var output []Model.SingeResult
-	for _, res := range resplist {
-		if res.SaleFlagNumber == 2 {
-			output = append(output, res)
+
+	if unixendtime == -1 {
+		for _, res := range resplist {
+			if res.SaleFlagNumber == 2 {
+				output = append(output, res)
+			}
+		}
+	} else {
+		for _, res := range resplist {
+			if res.SaleFlagNumber == 2 && res.StartUnix <= unixendtime {
+				output = append(output, res)
+			}
 		}
 	}
+
 	return output
 }
 
