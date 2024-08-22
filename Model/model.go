@@ -162,7 +162,6 @@ func (v *CompareResult) String() string {
 	s.WriteString("售票开始时间： " + startStr + "\r\n")
 	s.WriteString("售票结束时间： " + endStr + "\r\n")
 	s.WriteString("地址 ： " + v.VenueName + "\r\n")
-	s.WriteString("封面 ：" + v.Cover + "\r\n")
 	s.WriteString("开始时间" + v.StartTime + "\r\n")
 	s.WriteString("结束时间" + v.EndTime + "\r\n")
 
