@@ -9,5 +9,3 @@
 .vscode/
 .idea/
 *.iml
-/go.mod
-/go.sum
