@@ -19,6 +19,7 @@ const (
 	DefaultPageSize = "16"
 	DefaultPage     = "1"
 	DefaultType     = "展览"
+	GzArea          = "440100"
 )
 
 var (
@@ -48,11 +49,11 @@ func (bc *BiliClient) CreateUrl(page, pagesize, area, p_type string) string {
 }
 
 func (bc *BiliClient) GetDefaultUrl() string {
-	return bc.CreateUrl(DefaultPage, DefaultPageSize, ShenzhenArea, DefaultType)
+	return bc.CreateUrl(DefaultPage, DefaultPageSize, GzArea, DefaultType)
 }
 
 func (bc *BiliClient) GetOnePageData(page, pagesize string) (*Model.Data, error) {
-	url := bc.CreateUrl(page, pagesize, ShenzhenArea, DefaultType)
+	url := bc.CreateUrl(page, pagesize, GzArea, DefaultType)
 	return bc.request(url)
 }
 
