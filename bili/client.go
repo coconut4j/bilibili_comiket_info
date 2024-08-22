@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -168,9 +169,22 @@ func (bc *BiliClient) Show_result(resplist []Model.SingeResult) {
 	return
 }
 
-func (bc *BiliClient) SortByTime(resplist []Model.SingeResult) {
+func (bc *BiliClient) SortByTime(resplist []Model.SingeResult) []Model.SingeResult {
+	if isclear {
+		resplist = delunuse(resplist)
+	}
+	sort.Sort(Model.ByUnixTimestamp(resplist))
+	return resplist
+}
 
-	return
+func delunuse(resplist []Model.SingeResult) []Model.SingeResult {
+	var output []Model.SingeResult
+	for _, res := range resplist {
+		if res.SaleFlagNumber == 2 {
+			output = append(output, res)
+		}
+	}
+	return output
 }
 
 func (bc *BiliClient) Save2file(resplist []Model.SingeResult) {
@@ -273,6 +287,8 @@ func (bc *BiliClient) DaemonMode() {
 		os.Exit(0)
 	}
 
+	rpcmode()
+
 	return
 }
 
@@ -294,5 +310,6 @@ func rpcmode() {
 	// 模拟守护进程的持续工作
 	for {
 		//预留为protoc grpc提供http查询业务
+		//proto buffer编写数据及api格式 预留能力
 	}
 }

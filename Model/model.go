@@ -22,8 +22,8 @@ type Data struct {
 	Result     []SingeResult `json:"result"`
 }
 
-func NewCompareResult(projectId int, projectName string, saleFlag string, saleEndTime int64, saleStartTime int64, venueId string, venueName string, cover string, url string, staff string) *CompareResult {
-	return &CompareResult{ProjectId: projectId, ProjectName: projectName, SaleFlag: saleFlag, SaleEndTime: saleEndTime, SaleStartTime: saleStartTime, VenueId: venueId, VenueName: venueName, Cover: cover, Url: url, Staff: staff}
+func NewCompareResult(projectId int, projectName string, saleFlag string, saleEndTime int64, saleStartTime int64, venueId string, venueName string, cover string, url string, staff string, starttime string, endtime string) *CompareResult {
+	return &CompareResult{ProjectId: projectId, ProjectName: projectName, SaleFlag: saleFlag, SaleEndTime: saleEndTime, SaleStartTime: saleStartTime, VenueId: venueId, VenueName: venueName, Cover: cover, Url: url, Staff: staff, StartTime: starttime, EndTime: endtime}
 }
 
 // sale_flag_number 2为正常卖中 1是没开票
@@ -133,6 +133,8 @@ type CompareResult struct {
 	Cover         string `json:"cover"`
 	Url           string `json:"url"`
 	Staff         string `json:"staff,omitempty"`
+	StartTime     string `json:"start_time`
+	EndTime       string `json:"end_time"`
 }
 
 func (b *BaseInfo) String() string {
@@ -141,8 +143,15 @@ func (b *BaseInfo) String() string {
 }
 
 func (s *SingeResult) Conv2Com() *CompareResult {
-	return NewCompareResult(s.ProjectId, s.ProjectName, s.SaleFlag, s.SaleEndTime, s.SaleStartTime, s.VenueId, s.VenueName, "https:"+s.Cover, s.Url, s.Staff)
+	return NewCompareResult(s.ProjectId, s.ProjectName, s.SaleFlag, s.SaleEndTime, s.SaleStartTime, s.VenueId, s.VenueName, "https:"+s.Cover, s.Url, s.Staff, s.StartTime, s.EndTime)
 }
+
+// 按 Unix 时间戳排序的接口实现
+type ByUnixTimestamp []SingeResult
+
+func (a ByUnixTimestamp) Len() int           { return len(a) }
+func (a ByUnixTimestamp) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByUnixTimestamp) Less(i, j int) bool { return a[i].StartUnix < a[j].StartUnix }
 
 func (v *CompareResult) String() string {
 	startStr := time.Unix(v.SaleStartTime, 0).Format(time.DateTime)
@@ -153,8 +162,9 @@ func (v *CompareResult) String() string {
 	s.WriteString("售票开始时间： " + startStr + "\r\n")
 	s.WriteString("售票结束时间： " + endStr + "\r\n")
 	s.WriteString("地址 ： " + v.VenueName + "\r\n")
-	s.WriteString("嘉宾 ： " + v.Staff + "\r\n")
 	s.WriteString("封面 ：" + v.Cover + "\r\n")
-	s.WriteString("b站地址 ： " + v.Url + "\r\n")
+	s.WriteString("开始时间" + v.StartTime + "\r\n")
+	s.WriteString("结束时间" + v.EndTime + "\r\n")
+
 	return s.String()
 }

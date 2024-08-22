@@ -61,7 +61,7 @@ func Show_info_local() {
 
 	//打印到终端
 	if debuglv == 1 {
-		bc.SortByTime(res)
+		res = bc.SortByTime(res)
 		bc.Show_result(res)
 	}
 
@@ -73,7 +73,7 @@ func SaveFile() {
 	if err != nil {
 		panic(err)
 	}
-	bc.SortByTime(res)
+	res = bc.SortByTime(res)
 	bc.Save2file(res)
 }
 
