@@ -136,7 +136,7 @@ func PicSingle(picpathlist []string, resplist []Model.SingeResult) {
 
 			fontSize := 24.0
 			// 加载字体文件（你需要确保有一个 .ttf 文件）
-			err = dc.LoadFontFace("./ttf/微软雅黑粗体.ttf", fontSize)
+			err = dc.LoadFontFace("./ttf/SourceHanSerifCN-Heavy.ttf", fontSize)
 			if err != nil {
 				log.Fatalf("failed to load font: %v", err)
 			}
