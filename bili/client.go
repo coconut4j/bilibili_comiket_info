@@ -310,8 +310,9 @@ func (bc *BiliClient) DaemonMode() {
 }
 
 func (bc *BiliClient) Pic(resplist []Model.SingeResult) {
-	Draw.Piclong(resplist)
-	Draw.PicSingle(resplist)
+	pl, _ := Draw.SaveAllInfo(resplist)
+	Draw.Piclong(pl)
+	Draw.PicSingle(pl, resplist)
 	return
 }
 

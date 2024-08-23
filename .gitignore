@@ -10,3 +10,6 @@
 .idea/
 *.iml
 result*
+*.jpg
+*.png
+*,jpeg

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Stitching and Resizing Example</title>
+</head>
+<body>
+    <h1>Image Stitching and Resizing Example</h1>
+    
+    <!-- 图片上传输入框（允许多选） -->
+    <input type="file" id="upload" accept="image/*" multiple>
+    <br><br>
+    
+    <!-- 用于显示拼接结果的画布 -->
+    <canvas id="canvas"></canvas>
+    <br><br>
+    
+    <!-- 下载拼接结果的按钮 -->
+    <button id="download">Download Image</button>
+    
+    <script>
+        const uploadInput = document.getElementById('upload');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const downloadButton = document.getElementById('download');
+
+        uploadInput.addEventListener('change', (event) => {
+            const files = event.target.files;
+            const images = [];
+            const imageWidth = 600;
+            const imageHeight = 800;
+            let totalHeight = 0;
+
+            // 读取所有上传的图片文件
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        // 将图片压缩到600x800像素
+                        const resizedCanvas = document.createElement('canvas');
+                        resizedCanvas.width = imageWidth;
+                        resizedCanvas.height = imageHeight;
+                        const resizedCtx = resizedCanvas.getContext('2d');
+
+                        // 计算图片的缩放比例
+                        const scale = Math.min(imageWidth / img.width, imageHeight / img.height);
+                        const x = (imageWidth / 2) - (img.width / 2) * scale;
+                        const y = (imageHeight / 2) - (img.height / 2) * scale;
+
+                        resizedCtx.drawImage(img, x, y, img.width * scale, img.height * scale);
+
+                        images.push(resizedCanvas);
+                        totalHeight += imageHeight;
+
+                        // 如果所有图片都已经加载完毕
+                        if (images.length === files.length) {
+                            // 设置画布尺寸为总宽度和高度
+                            canvas.width = imageWidth;
+                            canvas.height = totalHeight;
+
+                            // 将每张图片绘制到画布上
+                            let yOffset = 0;
+                            images.forEach((image) => {
+                                ctx.drawImage(image, 0, yOffset);
+                                yOffset += image.height;
+                            });
+
+                            console.log('Images stitched successfully.');
+                        }
+                    }
+                    img.src = e.target.result;
+                }
+                
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 点击按钮，下载拼接后的图像
+        downloadButton.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = 'stitched_output.png'; // 输出文件名
+            link.href = canvas.toDataURL(); // 从画布生成数据URL
+            link.click();
+        });
+    </script>
+</body>
+</html>
