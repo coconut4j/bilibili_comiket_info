@@ -127,30 +127,36 @@ func PicSingle(picpathlist []string, resplist []Model.SingeResult) {
 		rect := image.Rect(50, 50, targetWidth, 50+targetHeight)
 		draw.Draw(outputImage, rect, resizedImg, image.Point{0, 0}, draw.Over)
 		outputImagepath := dirpath + "/" + strconv.Itoa(i) + ".jpg"
-
 		dc := gg.NewContextForImage(outputImage)
-		// 设置矩形的颜色和透明度
-		dc.SetColor(color.NRGBA{R: 128, G: 128, B: 128, A: 128})
-		// 绘制一个矩形 (x, y, width, height)
-		x := 50.0 + float64(targetWidth) + 25.0
-		y := 50.0
-		width, height := 300.0, 100.0
-		dc.DrawRectangle(x, y, width, height)
-		dc.Fill()
-		// 设置文本的颜色
-		dc.SetColor(color.White)
-		// 设置字体大小
-		fontSize := 20.0
+
+		fontSize := 24.0
 		// 加载字体文件（你需要确保有一个 .ttf 文件）
 		err = dc.LoadFontFace("./ttf/微软雅黑粗体.ttf", fontSize)
 		if err != nil {
 			log.Fatalf("failed to load font: %v", err)
 		}
+		// 定义要绘制的矩形和文本信息
+		rects := []struct {
+			x, y, width, height float64
+			text                string
+		}{
+			{50, 50, 300, 150, "这是第一个示例文本，用于展示如何在图像上绘制中文字符串。这个文本会自动换行以适应矩形区域的宽度。"},
+			{400, 50, 250, 100, "这是第二个文本示例，同样会根据矩形宽度自动换行。"},
+			{50, 250, 600, 200, "这是第三个文本示例。通过调整矩形的大小，可以看到文本在不同区域内的表现方式。"},
+		}
 
-		// 绘制文本
-		text1 := resplist[i].ProjectName
-		// 绘制自动换行的文本
-		drawWrappedString(dc, text1, x+10, y+10, width-20, fontSize)
+		// 遍历每个矩形并绘制
+		for _, rect := range rects {
+			// 绘制矩形
+			dc.SetColor(color.NRGBA{R: 128, G: 128, B: 128, A: 128})
+			dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
+			dc.Fill()
+
+			// 设置文本的颜色
+			dc.SetColor(color.White)
+
+			drawWrappedStringCentered(dc, rect.text, rect.x, rect.y, rect.width, rect.height, fontSize+5)
+		}
 
 		// 将绘制的内容保存回图像
 		outputImg := dc.Image()
@@ -221,5 +227,37 @@ func drawWrappedString(dc *gg.Context, s string, x, y, maxWidth, lineHeight floa
 	}
 	if line != "" {
 		dc.DrawStringAnchored(line, x, y, 0, 0)
+	}
+}
+
+// drawWrappedStringCentered 在指定矩形内绘制居中的自动换行字符串
+func drawWrappedStringCentered(dc *gg.Context, s string, x, y, width, height, lineHeight float64) {
+	words := strings.Split(s, "") // 将中文文本按字符分割
+	lines := []string{}
+	line := ""
+	for _, word := range words {
+		testLine := line + word
+		w, _ := dc.MeasureString(testLine)
+		if w > width {
+			lines = append(lines, line)
+			line = word
+		} else {
+			line = testLine
+		}
+	}
+	if line != "" {
+		lines = append(lines, line)
+	}
+
+	// 计算文本起始的 y 坐标，使文本在矩形内垂直居中
+	totalTextHeight := float64(len(lines)) * lineHeight
+	startY := y + (height-totalTextHeight)/2 + lineHeight/2
+
+	// 绘制每一行文本
+	for _, line := range lines {
+		w, _ := dc.MeasureString(line)
+		lineX := x + (width-w)/2 // 计算文本水平居中的 x 坐标
+		dc.DrawStringAnchored(line, lineX, startY, 0, 0.5)
+		startY += lineHeight
 	}
 }
