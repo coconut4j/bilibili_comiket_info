@@ -1,6 +1,7 @@
 package bili
 
 import (
+	"ComicS/Draw"
 	"ComicS/Model"
 	"encoding/json"
 	"errors"
@@ -309,7 +310,8 @@ func (bc *BiliClient) DaemonMode() {
 }
 
 func (bc *BiliClient) Pic(resplist []Model.SingeResult) {
-
+	Draw.Piclong(resplist)
+	Draw.PicSingle(resplist)
 	return
 }
 
