@@ -140,9 +140,9 @@ func PicSingle(picpathlist []string, resplist []Model.SingeResult) {
 			x, y, width, height float64
 			text                string
 		}{
-			{50, 50, 300, 150, "这是第一个示例文本，用于展示如何在图像上绘制中文字符串。这个文本会自动换行以适应矩形区域的宽度。"},
-			{400, 50, 250, 100, "这是第二个文本示例，同样会根据矩形宽度自动换行。"},
-			{50, 250, 600, 200, "这是第三个文本示例。通过调整矩形的大小，可以看到文本在不同区域内的表现方式。"},
+			{650, 50, 300, 100, resplist[i].ProjectName},
+			{650, 200, 300, 100, "地址：" + resplist[i].VenueName},
+			{650, 350, 300, 100, "时间：" + resplist[i].StartTime + " ~ " + resplist[i].EndTime},
 		}
 
 		// 遍历每个矩形并绘制
