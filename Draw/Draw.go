@@ -12,6 +12,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/disintegration/imaging"
@@ -120,50 +121,56 @@ func PicSingle(picpathlist []string, resplist []Model.SingeResult) {
 		return
 	}
 
+	wg := sync.WaitGroup{}
+	wg.Add(len(resplist))
 	for i, picpath := range picpathlist {
-		img, _ := imaging.Open(picpath)
-		resizedImg := imaging.Fit(img, targetWidth, targetHeight, imaging.Lanczos)
-		outputImage := imaging.New(outputWidth, outputHeight, color.NRGBA{0, 0, 0, 0})
-		rect := image.Rect(50, 50, targetWidth, 50+targetHeight)
-		draw.Draw(outputImage, rect, resizedImg, image.Point{0, 0}, draw.Over)
-		outputImagepath := dirpath + "/" + strconv.Itoa(i) + ".jpg"
-		dc := gg.NewContextForImage(outputImage)
+		go func(i int, picpath string) {
+			defer wg.Done()
+			img, _ := imaging.Open(picpath)
+			resizedImg := imaging.Fit(img, targetWidth, targetHeight, imaging.Lanczos)
+			outputImage := imaging.New(outputWidth, outputHeight, color.NRGBA{255, 255, 255, 255})
+			rect := image.Rect(50, 50, targetWidth, 50+targetHeight)
+			draw.Draw(outputImage, rect, resizedImg, image.Point{0, 0}, draw.Over)
+			outputImagepath := dirpath + "/" + strconv.Itoa(i) + ".jpg"
+			dc := gg.NewContextForImage(outputImage)
 
-		fontSize := 24.0
-		// 加载字体文件（你需要确保有一个 .ttf 文件）
-		err = dc.LoadFontFace("./ttf/微软雅黑粗体.ttf", fontSize)
-		if err != nil {
-			log.Fatalf("failed to load font: %v", err)
-		}
-		// 定义要绘制的矩形和文本信息
-		rects := []struct {
-			x, y, width, height float64
-			text                string
-		}{
-			{650, 50, 300, 100, resplist[i].ProjectName},
-			{650, 200, 300, 100, "地址：" + resplist[i].VenueName},
-			{650, 350, 300, 100, "时间：" + resplist[i].StartTime + " ~ " + resplist[i].EndTime},
-		}
+			fontSize := 24.0
+			// 加载字体文件（你需要确保有一个 .ttf 文件）
+			err = dc.LoadFontFace("./ttf/微软雅黑粗体.ttf", fontSize)
+			if err != nil {
+				log.Fatalf("failed to load font: %v", err)
+			}
+			// 定义要绘制的矩形和文本信息
+			rects := []struct {
+				x, y, width, height float64
+				text                string
+			}{
+				{650, 50, 300, 100, resplist[i].ProjectName},
+				{650, 200, 300, 100, "地址：" + resplist[i].VenueName},
+				{650, 350, 300, 100, "时间：" + resplist[i].StartTime + " ~ " + resplist[i].EndTime},
+			}
 
-		// 遍历每个矩形并绘制
-		for _, rect := range rects {
-			// 绘制矩形
-			dc.SetColor(color.NRGBA{R: 128, G: 128, B: 128, A: 128})
-			dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
-			dc.Fill()
+			// 遍历每个矩形并绘制
+			for _, rect := range rects {
+				// 绘制矩形
+				dc.SetColor(color.NRGBA{R: 128, G: 128, B: 128, A: 50})
+				dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
+				dc.Fill()
 
-			// 设置文本的颜色
-			dc.SetColor(color.White)
+				// 设置文本的颜色
+				dc.SetColor(color.Black)
 
-			drawWrappedStringCentered(dc, rect.text, rect.x, rect.y, rect.width, rect.height, fontSize+5)
-		}
+				drawWrappedStringCentered(dc, rect.text, rect.x, rect.y, rect.width, rect.height, fontSize+5)
+			}
 
-		// 将绘制的内容保存回图像
-		outputImg := dc.Image()
-		if err := imaging.Save(outputImg, outputImagepath); err != nil {
-			log.Fatalf("failed to save image: %v", err)
-		}
+			// 将绘制的内容保存回图像
+			outputImg := dc.Image()
+			if err := imaging.Save(outputImg, outputImagepath); err != nil {
+				log.Fatalf("failed to save image: %v", err)
+			}
+		}(i, picpath)
 	}
+	wg.Wait()
 
 	return
 }
